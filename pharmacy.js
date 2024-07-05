@@ -12,51 +12,75 @@ export class Pharmacy {
   }
   updateBenefitValue() {
     for (let i = 0; i < this.drugs.length; i++) {
-      if (
-        this.drugs[i].name != "Herbal Tea" &&
-        this.drugs[i].name != "Fervex"
-      ) {
-        if (this.drugs[i].benefit > 0) {
-          if (this.drugs[i].name != "Magic Pill") {
-            this.drugs[i].benefit = this.drugs[i].benefit - 1;
+      const drug = this.drugs[i];
+
+      switch (drug.name) {
+        case "Herbal Tea":
+          if (drug.benefit < 50) {
+            drug.benefit++;
           }
-        }
-      } else {
-        if (this.drugs[i].benefit < 50) {
-          this.drugs[i].benefit = this.drugs[i].benefit + 1;
-          if (this.drugs[i].name == "Fervex") {
-            if (this.drugs[i].expiresIn < 11) {
-              if (this.drugs[i].benefit < 50) {
-                this.drugs[i].benefit = this.drugs[i].benefit + 1;
-              }
+          break;
+
+        case "Fervex":
+          if (drug.benefit < 50) {
+            drug.benefit++;
+            if (drug.expiresIn <= 10) {
+              drug.benefit++;
             }
-            if (this.drugs[i].expiresIn < 6) {
-              if (this.drugs[i].benefit < 50) {
-                this.drugs[i].benefit = this.drugs[i].benefit + 1;
-              }
+            if (drug.expiresIn <= 5) {
+              drug.benefit++;
             }
           }
-        }
+          break;
+
+        case "Magic Pill":
+          // "Magic Pill" never expires nor decreases in Benefit.
+          break;
+
+        case "Dafalgan":
+          if (drug.benefit > 0) {
+            if (drug.benefit === 1) {
+              drug.benefit -= 1; // "Dafalgan" degrades in Benefit - 1 because benefit never negative
+            } else {
+              drug.benefit -= 2; // "Dafalgan" degrades in Benefit twice as fast as normal drugs.
+            }
+          }
+          break;
+
+        default:
+          if (drug.benefit > 0) {
+            drug.benefit--; // Normal degradation for other drugs
+          }
+          break;
       }
-      if (this.drugs[i].name != "Magic Pill") {
-        this.drugs[i].expiresIn = this.drugs[i].expiresIn - 1;
+
+      if (drug.name !== "Magic Pill") {
+        drug.expiresIn--;
       }
-      if (this.drugs[i].expiresIn < 0) {
-        if (this.drugs[i].name != "Herbal Tea") {
-          if (this.drugs[i].name != "Fervex") {
-            if (this.drugs[i].benefit > 0) {
-              if (this.drugs[i].name != "Magic Pill") {
-                this.drugs[i].benefit = this.drugs[i].benefit - 1;
-              }
+
+      if (drug.expiresIn < 0) {
+        switch (drug.name) {
+          case "Herbal Tea":
+            if (drug.benefit < 50) {
+              drug.benefit++;
             }
-          } else {
-            this.drugs[i].benefit =
-              this.drugs[i].benefit - this.drugs[i].benefit;
-          }
-        } else {
-          if (this.drugs[i].benefit < 50) {
-            this.drugs[i].benefit = this.drugs[i].benefit + 1;
-          }
+            break;
+
+          case "Fervex":
+            drug.benefit = 0;
+            break;
+
+          case "Dafalgan":
+            if (drug.benefit > 0) {
+              drug.benefit -= 2; // Degrades twice as fast when expired
+            }
+            break;
+
+          default:
+            if (drug.benefit > 0) {
+              drug.benefit--; // Normal degradation for other drugs when expired
+            }
+            break;
         }
       }
     }
